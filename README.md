@@ -28,8 +28,6 @@
   - [Health Check](#get-)
   - [Prediksi Emosi](#post-predict)
 - [Struktur Proyek](#struktur-proyek)
-- [Kontribusi](#kontribusi)
-- [Lisensi](#lisensi)
 
 ---
 
