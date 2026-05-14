@@ -1,9 +1,18 @@
 from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 import tensorflow as tf
 import numpy as np
 import cv2
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Load SavedModel
 model = tf.saved_model.load("emotion_savedmodel")
