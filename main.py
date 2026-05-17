@@ -1,165 +1,28 @@
-import os
-import json
-import zipfile
-import numpy as np
-import tensorflow as tf
-from pathlib import Path
-from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from transformers import BertTokenizer
-from google import genai
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from routers.face_router import router as face_router
+from routers.text_router import router as text_router
 
-# Config
-load_dotenv()
-
-BASE_DIR         = Path(__file__).parent
-SAVEDMODEL_PATH  = BASE_DIR / "model" / "emovision_nlp_savedmodel"
-TOKENIZER_ZIP    = BASE_DIR / "model" / "tokenizer_export.zip"
-TOKENIZER_DIR    = BASE_DIR / "model" / "tokenizer"
-METADATA_PATH    = BASE_DIR / "model" / "model_metadata.json"
-GEMINI_API_KEY   = os.getenv("GEMINI_API_KEY")
-MAX_LEN          = 64
-NUM_LABELS       = 7
-
-# Extract tokenizer (jika belum)
-if not (TOKENIZER_DIR / "tokenizer_config.json").exists():
-    print("Extracting tokenizer...")
-    with zipfile.ZipFile(TOKENIZER_ZIP, "r") as z:
-        z.extractall(TOKENIZER_DIR)
-    print("Tokenizer extracted.")
-
-# Load metadata
-with open(METADATA_PATH, "r") as f:
-    metadata = json.load(f)
-
-LABEL_MAP = metadata["label_map"]
-ID2LABEL  = {int(k): v for k, v in LABEL_MAP.items()}
-
-# Load SavedModel
-print("Loading SavedModel...")
-loaded_model = tf.saved_model.load(str(SAVEDMODEL_PATH))
-infer        = loaded_model.signatures["serving_default"]
-
-# Auto-detect output key dari model
-_dummy_ids = tf.zeros((1, MAX_LEN), dtype=tf.int32)
-_dummy_out = infer(input_ids=_dummy_ids, attention_mask=_dummy_ids, token_type_ids=_dummy_ids)
-OUTPUT_KEY = list(_dummy_out.keys())[0]
-print(f"Model loaded. Output key: '{OUTPUT_KEY}'")
-
-# Load Tokenizer
-tokenizer = BertTokenizer.from_pretrained(str(TOKENIZER_DIR))
-print("Tokenizer loaded. Ready!")
-
-# Gemini setup
-gemini_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
-
-# FastAPI
+# Inisialisasi API
 app = FastAPI(
-    title       = "EmoVision NLP API",
-    description = "Emotion detection dari teks jurnal menggunakan mBERT + Gemini insight",
-    version     = "2.0.0"
+    title="EmoVision AI API",
+    description="API Tunggal untuk Deteksi Emosi Berbasis Wajah dan Teks Jurnal",
+    version="2.0.0"
 )
 
-class PredictRequest(BaseModel):
-    text        : str
-    with_insight: bool = False
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-class PredictResponse(BaseModel):
-    text            : str
-    predicted_label : str
-    confidence      : float
-    all_scores      : dict
-    insight         : str | None = None
+# Endpoint
+app.include_router(face_router, prefix="/api/face", tags=["Face Emotion Detection"])
+app.include_router(text_router, prefix="/api/text", tags=["Text Emotion NLP"])
 
-# Helper: predict
-def predict_emotion(text: str) -> dict:
-    encoding = tokenizer(
-        text,
-        max_length     = MAX_LEN,
-        padding        = "max_length",
-        truncation     = True,
-        return_tensors = "tf"
-    )
-
-    output = infer(
-        input_ids      = tf.cast(encoding["input_ids"],      tf.int32),
-        attention_mask = tf.cast(encoding["attention_mask"], tf.int32),
-        token_type_ids = tf.cast(
-            encoding.get("token_type_ids", tf.zeros_like(encoding["input_ids"])),
-            tf.int32
-        )
-    )
-
-    logits     = output[OUTPUT_KEY]
-    probs      = tf.nn.softmax(logits, axis=-1).numpy()[0]
-    pred_idx   = int(np.argmax(probs))
-    confidence = float(probs[pred_idx])
-    all_scores = {ID2LABEL[i]: float(probs[i]) for i in range(len(probs))}
-
-    return {
-        "predicted_label": ID2LABEL[pred_idx],
-        "confidence"     : confidence,
-        "all_scores"     : all_scores
-    }
-
-# Helper: Gemini insight
-def get_emotion_insight(journal_text: str, emotion_result: dict) -> str:
-    if not gemini_client:
-        return "[GEMINI_API_KEY tidak ditemukan di file .env]"
-
-    emotion    = emotion_result["predicted_label"]
-    confidence = emotion_result["confidence"] * 100
-    top3_str   = ", ".join([
-        f"{k}: {v*100:.1f}%"
-        for k, v in sorted(emotion_result["all_scores"].items(), key=lambda x: -x[1])[:3]
-    ])
-
-    prompt = f"""Kamu adalah asisten kesehatan mental yang empatik dan suportif.
-
-Seorang pengguna menulis di jurnal emosi mereka:
-\"\"\"{journal_text}\"\"\"
-
-Model AI mendeteksi emosi dominan: **{emotion}** (confidence: {confidence:.1f}%)
-Distribusi emosi teratas: {top3_str}
-
-Berikan respons dalam Bahasa Indonesia yang:
-1. Validasi perasaan pengguna dengan empati (1 kalimat)
-2. Berikan 1 saran konkret & positif untuk membantu mengelola emosi ini
-3. Penutup yang menyemangati (1 kalimat)
-
-Gunakan bahasa yang hangat, tidak menghakimi, dan mudah dipahami.
-Maksimal 250 karakter."""
-
-    try:
-        response = gemini_client.models.generate_content(
-            model    = "gemini-2.5-flash-lite",
-            contents = prompt
-        )
-        return response.text
-    except Exception as e:
-        return f"[Gemini error: {str(e)}]"
-
-
-# Endpoints
 @app.get("/")
-def root():
-    return {"message": "EmoVision NLP API is running", "status": "ok"}
-
-@app.get("/health")
-def health():
-    return {"status": "healthy", "model": "emovision_nlp_savedmodel"}
-
-@app.post("/predict", response_model=PredictResponse)
-def predict(request: PredictRequest):
-    if not request.text.strip():
-        raise HTTPException(status_code=400, detail="Text tidak boleh kosong.")
-    result  = predict_emotion(request.text)
-    insight = get_emotion_insight(request.text, result) if request.with_insight else None
-    return PredictResponse(
-        text            = request.text,
-        predicted_label = result["predicted_label"],
-        confidence      = result["confidence"],
-        all_scores      = result["all_scores"],
-        insight         = insight
-    )
+def root_api():
+    return {"message": "Server EmoVision AI API Aktif. Akses /docs untuk Dokumentasi Swagger."}

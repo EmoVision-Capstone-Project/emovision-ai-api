@@ -1,30 +1,19 @@
-from fastapi import FastAPI, UploadFile, File
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, UploadFile, File
 import tensorflow as tf
 import numpy as np
 import cv2
 
-app = FastAPI()
+router = APIRouter()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], 
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Load SavedModel
+# Load SavedModel 
 model = tf.saved_model.load("emotion_savedmodel")
 infer = model.signatures["serving_default"]
 
 class_names = ["Angry", "Disgust", "Fear", "Happy", "Neutral", "Sad", "Surprise"]
 
-
-@app.get("/")
+@router.get("/")
 def home():
     return {"message": "API Emotion Detection jalan"}
-
 
 def crop_face_from_array(img):
     if img is None:
@@ -60,8 +49,7 @@ def crop_face_from_array(img):
 
     return img[y1:y2, x1:x2]
 
-
-@app.post("/predict")
+@router.post("/predict")
 async def predict(file: UploadFile = File(...)):
     contents = await file.read()
 

@@ -1,17 +1,17 @@
-tensorflow
-fastapi
-uvicorn
-numpy
-pillow
-python-multipart
-
+# Web Framework & Server
 fastapi==0.115.12
 uvicorn==0.34.0
+python-multipart
+pydantic==2.10.6
+
+# Machine Learning & AI Models (Emotion & Text)
 tensorflow==2.15.1
+numpy==1.26.4
 transformers==4.44.0
 tokenizers==0.19.1
 huggingface-hub==0.26.0
 google-genai==1.16.0
+
+# Utilities
+pillow
 python-dotenv==1.0.1
-numpy==1.26.4
-pydantic==2.10.6
