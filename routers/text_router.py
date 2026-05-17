@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from transformers import BertTokenizer
 from google import genai
+from huggingface_hub import snapshot_download
 
 # Config
 load_dotenv()
@@ -20,9 +21,20 @@ SAVEDMODEL_PATH  = BASE_DIR / "model" / "emovision_nlp_savedmodel"
 TOKENIZER_ZIP    = BASE_DIR / "model" / "tokenizer_export.zip"
 TOKENIZER_DIR    = BASE_DIR / "model" / "tokenizer"
 METADATA_PATH    = BASE_DIR / "model" / "model_metadata.json"
+MODEL_DIR        = BASE_DIR / "model"
+HF_REPO_ID       = "fadidinna/emovision-nlp-model"
 GEMINI_API_KEY   = os.getenv("GEMINI_API_KEY")
 MAX_LEN          = 64
 NUM_LABELS       = 7
+
+if not os.path.exists(MODEL_DIR / "emovision-nlp-savedmodel"):
+    print("Mengunduh model dari Hugging Face... Mohon tunggu.")
+    snapshot_download(
+        repo_id=HF_REPO_ID, 
+        local_dir=MODEL_DIR,
+        local_dir_use_symlinks=False
+    )
+    print("Download selesai!")
 
 # Extract tokenizer
 if not (TOKENIZER_DIR / "tokenizer_config.json").exists():
