@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  REST API berperforma tinggi untuk deteksi emosi wajah secara real-time, dibangun menggunakan FastAPI dan TensorFlow. Mampu mendeteksi 7 kelas emosi dari gambar beserta skor kepercayaan dan distribusi probabilitas lengkap.
+  REST API Multimodal berperforma tinggi untuk deteksi emosi secara real-time, mengombinasikan analisis ekspresi wajah (Computer Vision via FastAPI & TensorFlow) dan analisis teks jurnal (NLP via mBERT di Hugging Face). Mampu mengenali 7 kelas emosi secara holistik beserta skor kepercayaan dan rincian distribusi probabilitas lengkap.
 </p>
 
 ---
@@ -17,29 +17,30 @@
 ## Daftar Isi
 
 - [Gambaran Umum](#gambaran-umum)
+- [Arsitektur Multimodal](#arsitektur-multimodal)
 - [Fitur](#fitur)
 - [Kelas Emosi](#kelas-emosi)
 - [Teknologi yang Digunakan](#teknologi-yang-digunakan)
-- [Memulai](#memulai)
-  - [Prasyarat](#prasyarat)
-  - [Instalasi](#instalasi)
-  - [Menjalankan Server](#menjalankan-server)
+- [Memulai & Instalasi](#memulai--instalansi)
+  - [1. Setup API Deteksi Wajah (Lokal)](#1-setup-api-deteksi-wajah-lokal)
+  - [2. Setup API Deteksi Teks NLP (Lokal / Hugging Face)](#2-setup-api-deteksi-teks-nlp-lokal--hugging-face)
 - [Referensi API](#referensi-api)
-  - [Health Check](#get-)
-  - [Prediksi Emosi](#post-predict)
+  - [1. API Deteksi Wajah (Image)](#1-api-deteksi-wajah-image)
+  - [2. API Deteksi Teks Jurnal (NLP)](#2-api-deteksi-teks-jurnal-nlp)
 - [Struktur Proyek](#struktur-proyek)
 
 ---
 
 ## Gambaran Umum
 
-EmoVision AI API adalah inti machine learning dari **EmoVision Capstone Project**. API ini menerima file gambar, mendeteksi dan memotong wajah secara otomatis menggunakan Haar Cascade dari OpenCV, lalu menjalankan inferensi melalui model TensorFlow (SavedModel) yang telah dilatih untuk mengembalikan prediksi emosi beserta skor kepercayaannya.
+EmoVision AI adalah inti machine learning dari **EmoVision Capstone Project** yang mengusung pendekatan multimodal (Teks & Gambar). Sistem ini mengintegrasikan dua layanan utama: API analisis teks yang memproses curhatan atau jurnal pengguna menggunakan arsitektur Transformer mBERT via Hugging Face Spaces, serta API deteksi ekspresi wajah yang menerima file gambar, mendeteksi dan memotong wajah secara otomatis menggunakan Haar Cascade OpenCV, lalu menjalankan inferensi melalui model TensorFlow (SavedModel) lokal. Kedua subsistem ini menyelaraskan hasil untuk mengembalikan prediksi 7 kelas emosi secara holistik beserta skor kepercayaan dan distribusi probabilitas yang lengkap.
 
 ---
 
 ## Fitur
 
 - **Deteksi Wajah Otomatis** — Menggunakan Haar Cascade untuk menemukan dan memotong wajah terbesar dalam gambar; jika tidak ada wajah yang terdeteksi, dilakukan center crop secara otomatis.
+- - **Analisis Sentimen Jurnal** — Memahami konteks bahasa (NLP) dari tulisan curhatan/jurnal pengguna menggunakan mBERT.
 - **Pengenalan 7 Kelas Emosi** — Mengklasifikasikan ekspresi wajah ke dalam 7 kategori emosi yang berbeda.
 - **Output Kepercayaan & Probabilitas** — Mengembalikan emosi teratas beserta rincian probabilitas untuk semua kelas.
 - **Cepat & Ringan** — Penanganan request asinkron melalui FastAPI dengan overhead minimal.
@@ -68,11 +69,18 @@ Model mengenali 7 kategori ekspresi wajah berikut:
 | Teknologi | Peran |
 |-----------|-------|
 | **FastAPI** | Framework web & routing API |
+| **Uvicorn** | ASGI server untuk menjalankan FastAPI |
 | **TensorFlow** | Inferensi model (format SavedModel) |
+| **tf-keras** | Kompatibilitas loading model Keras dengan TensorFlow |
+| **Transformers (HuggingFace)** | Arsitektur & tokenizer mBERT untuk klasifikasi teks emosi |
+| **Multilingual BERT (mBERT)** | Model bahasa pra-latih berbasis Transformer untuk pemrosesan teks multibahasa |
 | **OpenCV** | Deteksi wajah & preprocessing gambar |
 | **NumPy** | Manipulasi array |
-| **Uvicorn** | ASGI server |
-| **Pillow** | Dukungan format gambar |
+| **Google Gemini API** | Generative AI untuk menghasilkan insight emosi dari hasil prediksi teks |
+| **Python Dotenv** | Manajemen environment variable & API key |
+| **Docker** | Containerisasi API NLP untuk deployment di Hugging Face Spaces |
+| **Hugging Face Spaces** | Platform hosting API NLP berbasis cloud |
+| **PyTorch** | Konversi weight mBERT dari format PyTorch ke TensorFlow saat load model |
 
 ---
 
