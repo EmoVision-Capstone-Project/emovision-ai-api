@@ -55,7 +55,7 @@ Proyek ini terbagi menjadi dua *service* utama:
 ## Fitur
 
 - **Deteksi Wajah Otomatis** — Menggunakan Haar Cascade untuk menemukan dan memotong wajah terbesar dalam gambar; jika tidak ada wajah yang terdeteksi, dilakukan center crop secara otomatis.
-- - **Analisis Sentimen Jurnal** — Memahami konteks bahasa (NLP) dari tulisan curhatan/jurnal pengguna menggunakan mBERT.
+- **Analisis Sentimen Jurnal** — Memahami konteks bahasa (NLP) dari tulisan curhatan/jurnal pengguna menggunakan mBERT.
 - **Pengenalan 7 Kelas Emosi** — Mengklasifikasikan ekspresi wajah ke dalam 7 kategori emosi yang berbeda.
 - **Output Kepercayaan & Probabilitas** — Mengembalikan emosi teratas beserta rincian probabilitas untuk semua kelas.
 - **Cepat & Ringan** — Penanganan request asinkron melalui FastAPI dengan overhead minimal.
