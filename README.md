@@ -1,15 +1,20 @@
 # EmoVision AI API
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge&logo=python&logoColor=white"/>
-  <img src="https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white"/>
-  <img src="https://img.shields.io/badge/TensorFlow-2.x-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge&logo=python&logoColor=white"/>
+  <img src="https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white"/>
+  <img src="https://img.shields.io/badge/TensorFlow-2.15-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Transformers-4.44-F9AB00?style=for-the-badge&logo=huggingface&logoColor=white"/>
+  <img src="https://img.shields.io/badge/mBERT-Multilingual-4B0082?style=for-the-badge&logo=bert&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Gemini-AI-4285F4?style=for-the-badge&logo=google&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Hugging%20Face-Spaces-F9AB00?style=for-the-badge&logo=huggingface&logoColor=white"/>
   <img src="https://img.shields.io/badge/OpenCV-4.x-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white"/>
   <img src="https://img.shields.io/badge/Lisensi-MIT-green?style=for-the-badge"/>
 </p>
 
 <p align="center">
-  REST API Multimodal berperforma tinggi untuk deteksi emosi secara real-time, mengombinasikan analisis ekspresi wajah (Computer Vision via FastAPI & TensorFlow) dan analisis teks jurnal (NLP via mBERT di Hugging Face). Mampu mengenali 7 kelas emosi secara holistik beserta skor kepercayaan dan rincian distribusi probabilitas lengkap.
+  REST API Multimodal berperforma tinggi untuk deteksi emosi secara real-time, mengombinasikan <b>Analisis Ekspresi Wajah</b> (Computer Vision via FastAPI & TensorFlow) dan <b>Analisis Teks Jurnal</b> (NLP via mBERT di Hugging Face). Mampu mengenali 7 kelas emosi secara holistik beserta skor kepercayaan dan rincian distribusi probabilitas lengkap.
 </p>
 
 ---
@@ -21,19 +26,29 @@
 - [Fitur](#fitur)
 - [Kelas Emosi](#kelas-emosi)
 - [Teknologi yang Digunakan](#teknologi-yang-digunakan)
-- [Memulai & Instalasi](#memulai--instalansi)
+- [Memulai dan Instalasi](#memulai-dan-instalasi)
+  - [Prasyarat Umum](#prasyarat-umum)
   - [1. Setup API Deteksi Wajah (Lokal)](#1-setup-api-deteksi-wajah-lokal)
   - [2. Setup API Deteksi Teks NLP (Lokal / Hugging Face)](#2-setup-api-deteksi-teks-nlp-lokal--hugging-face)
 - [Referensi API](#referensi-api)
   - [1. API Deteksi Wajah (Image)](#1-api-deteksi-wajah-image)
   - [2. API Deteksi Teks Jurnal (NLP)](#2-api-deteksi-teks-jurnal-nlp)
 - [Struktur Proyek](#struktur-proyek)
-
+  - [1. Struktur API Deteksi Wajah (Lokal)](#1-struktur-api-deteksi-wajah-lokal)
+  - [2. Struktur API Deteksi Teks NLP (HuggingFace)](#2-struktur-api-deteksi-teks-nlp-huggingface)
 ---
 
 ## Gambaran Umum
 
 EmoVision AI adalah inti machine learning dari **EmoVision Capstone Project** yang mengusung pendekatan multimodal (Teks & Gambar). Sistem ini mengintegrasikan dua layanan utama: API analisis teks yang memproses curhatan atau jurnal pengguna menggunakan arsitektur Transformer mBERT via Hugging Face Spaces, serta API deteksi ekspresi wajah yang menerima file gambar, mendeteksi dan memotong wajah secara otomatis menggunakan Haar Cascade OpenCV, lalu menjalankan inferensi melalui model TensorFlow (SavedModel) lokal. Kedua subsistem ini menyelaraskan hasil untuk mengembalikan prediksi 7 kelas emosi secara holistik beserta skor kepercayaan dan distribusi probabilitas yang lengkap.
+
+---
+
+## Arsitektur Multimodal
+
+Proyek ini terbagi menjadi dua *service* utama:
+* **Service A (Image - Local/Server):** Menerima file gambar, mendeteksi wajah menggunakan Haar Cascade OpenCV, lalu menjalankan inferensi melalui TensorFlow SavedModel.
+* **Service B (Text - Cloud/Hugging Face):** Di-*deploy* di platform Hugging Face (`tasyacac05-emovision.hf.space`). Menerima *input* teks dan mengklasifikasikan sentimen emosional tulisan tersebut menggunakan arsitektur Transformer (mBERT).
 
 ---
 
@@ -84,15 +99,15 @@ Model mengenali 7 kategori ekspresi wajah berikut:
 
 ---
 
-## Memulai
+## Memulai dan Instalasi
 
-### Prasyarat
+### Prasyarat Umum
 
 - Python 3.10 atau lebih tinggi
 - Package manager `pip`
 - (Disarankan) Virtual environment seperti `venv` atau `conda`
 
-### Instalasi
+### 1. Setup API Deteksi Wajah (Lokal)
 
 1. **Clone repositori**
 
@@ -138,10 +153,65 @@ API akan tersedia di `http://localhost:8000`.
 
 Dokumentasi API interaktif (Swagger UI) dapat diakses di `http://localhost:8000/docs`.
 
+### 2. Setup API Deteksi Teks NLP (Lokal / Hugging Face)
+
+Jika ingin melakukan pengembangan atau menjalankan API model mBERT (Teks) secara lokal sebelum didorong ke Hugging Face Spaces:
+
+1. **Clone/Masuk ke direktori proyek NLP**
+```bash
+   cd emovision-nlp-api
+```
+
+2. **Buat dan aktifkan virtual environment (Python 3.11)**
+```bash
+   py -3.11 -m venv venv311
+   venv311\Scripts\activate        # Windows
+   source venv311/bin/activate     # Linux / macOS
+```
+
+3. **Install dependensi NLP**
+```bash
+   pip install -r requirements.txt
+```
+
+4. **Buat file `.env` dan isi Gemini API Key**
+```env
+   GEMINI_API_KEY=isi_api_key_kamu
+```
+
+5. **Jalankan Server API Teks Lokal**
+```bash
+   uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+   *Swagger UI lokal dapat diakses di `http://localhost:8000/docs`.*
+
+---
+
+### Deploy ke Hugging Face Spaces
+
+API Deteksi Teks di-*hosting* di Hugging Face Spaces menggunakan Docker. Untuk memperbarui deployment:
+
+1. **Pastikan sudah login dan punya Access Token** di [huggingface.co](https://huggingface.co) dengan role **Write**
+
+2. **Push perubahan ke Space**
+```bash
+   git remote set-url origin https://USERNAME:TOKEN@huggingface.co/spaces/TasyaCAC05/EmoVision
+   git add .
+   git commit -m "update"
+   git push
+```
+
+3. **Akses API cloud setelah build selesai**
+   https://tasyacac05-emovision.hf.space/docs
+
+> **Catatan:** Free tier Hugging Face Spaces akan otomatis *sleep* setelah tidak ada aktivitas. Request pertama setelah *sleep* membutuhkan waktu 30 detik untuk *wake up*.
+
+> **Gemini API Key** disimpan sebagai *Secret* di Settings Space, bukan di dalam kode atau repo.
 ---
 
 ## Referensi API
 
+### 1. API Deteksi Wajah (Image)
 ### `GET /`
 
 Endpoint health check untuk memastikan layanan berjalan dengan baik.
@@ -162,9 +232,9 @@ Menerima file gambar dan mengembalikan prediksi emosi beserta skor kepercayaan.
 
 **Request**
 
-| Parameter | Tipe | Wajib | Deskripsi |
-|-----------|------|-------|-----------|
-| `file` | `multipart/form-data` | ✅ | File gambar (JPEG, PNG, dll.) |
+| Parameter | Tipe |  Deskripsi |
+|-----------|------|-----------|
+| `file` | `multipart/form-data` | File gambar (JPEG, PNG, dll.) |
 
 **Contoh — cURL**
 
@@ -221,11 +291,123 @@ print(response.json())
 | `confidence` | `float` | Skor kepercayaan prediksi teratas (0–100) |
 | `probabilities` | `object` | Persentase probabilitas untuk setiap 7 kelas emosi |
 
+### 2. API Deteksi Teks Jurnal (NLP)
+
+API berbasis cloud yang menangani input berupa string teks curhatan/jurnal pengguna.
+
+- **Base URL Cloud:** `https://tasyacac05-emovision.hf.space`
+- **Dokumentasi Swagger:** `https://tasyacac05-emovision.hf.space/docs`
+
+---
+
+#### `GET /`
+Health check untuk memastikan API berjalan.
+
+**Contoh Respons:**
+```json
+{
+  "message": "EmoVision NLP API is running",
+  "status": "ok"
+}
+```
+---
+
+#### `GET /health`
+Mengecek status model yang sedang berjalan.
+
+**Contoh Respons:**
+```json
+{
+  "status": "healthy",
+  "model": "emovision_nlp_savedmodel"
+}
+```
+---
+
+#### `POST /predict`
+Menerima input teks jurnal dan mengembalikan hasil klasifikasi emosi beserta insight opsional dari Gemini AI.
+
+**Request Body:**
+| Field | Tipe | Deskripsi |
+|-------|------|-------|-----------|
+| `text` | `string` | Teks jurnal/curhatan pengguna |
+| `with_insight` | `boolean` | Jika `true`, mengembalikan insight empati dari Gemini AI (default: `false`) |
+
+**Contoh Request (Python):**
+```python
+import requests
+
+url = "https://tasyacac05-emovision.hf.space/predict"
+
+# Tanpa insight
+payload = {
+    "text": "Hari ini aku senang sekali karena modelku berhasil di-deploy!",
+    "with_insight": False
+}
+response = requests.post(url, json=payload)
+print(response.json())
+
+# Dengan insight Gemini
+payload_with_insight = {
+    "text": "Aku merasa sangat cemas dengan presentasi besok.",
+    "with_insight": True
+}
+response = requests.post(url, json=payload_with_insight)
+print(response.json())
+```
+
+**Contoh Respons (tanpa insight):**
+```json
+{
+  "text": "Hari ini aku senang sekali karena modelku berhasil di-deploy!",
+  "predicted_label": "happy",
+  "confidence": 0.9812,
+  "all_scores": {
+    "angry": 0.0001,
+    "disgust": 0.0000,
+    "fear": 0.0002,
+    "happy": 0.9812,
+    "neutral": 0.0150,
+    "sad": 0.0030,
+    "surprise": 0.0005
+  },
+  "insight": null
+}
+```
+
+**Contoh Respons (dengan insight):**
+```json
+{
+  "text": "Aku merasa sangat cemas dengan presentasi besok.",
+  "predicted_label": "fear",
+  "confidence": 0.8743,
+  "all_scores": {
+    "angry": 0.0021,
+    "disgust": 0.0005,
+    "fear": 0.8743,
+    "happy": 0.0012,
+    "neutral": 0.0634,
+    "sad": 0.0573,
+    "surprise": 0.0012
+  },
+  "insight": "Wajar sekali merasa cemas sebelum presentasi, perasaanmu sangat valid. Coba tarik napas dalam dan ingat bahwa kamu sudah mempersiapkan ini dengan baik. Kamu pasti bisa!"
+}
+```
+
+**Kode Error:**
+| Kode | Deskripsi |
+|------|-----------|
+| `400` | Text tidak boleh kosong |
+| `422` | Format request body tidak valid |
+| `500` | Internal server error |
+
 ---
 
 ## Struktur Proyek
 
-```
+### 1. Struktur API Deteksi Wajah (Lokal)
+
+```text
 emovision-ai-api/
 ├── app.py                      # Aplikasi FastAPI & definisi endpoint
 ├── requirements.txt            # Daftar dependensi Python
@@ -236,4 +418,28 @@ emovision-ai-api/
     └── variables/
         ├── variables.data-00000-of-00001
         └── variables.index
+```
+
+### 2. Struktur API Deteksi Teks NLP (HuggingFace)
+
+```text
+emovision-nlp-api/
+├── main.py                         # Aplikasi FastAPI & definisi endpoint NLP
+├── requirements.txt                # Daftar dependensi Python
+├── Dockerfile                      # Konfigurasi Docker untuk Hugging Face Spaces
+├── .env                            # Gemini API Key (tidak di-commit ke Git)
+├── .gitignore                      # Mengecualikan venv, __pycache__, .env
+└── model/
+    ├── emovision_nlp_savedmodel/   # Model TensorFlow mBERT yang telah dilatih
+    │   ├── saved_model.pb
+    │   ├── fingerprint.pb
+    │   └── variables/
+    │       ├── variables.data-00000-of-00001
+    │       └── variables.index
+    ├── tokenizer/                  # mBERT Tokenizer
+    │   ├── tokenizer.json
+    │   ├── tokenizer_config.json
+    │   ├── special_tokens_map.json
+    │   └── vocab.txt
+    └── model_metadata.json         # Metadata label & konfigurasi model
 ```
