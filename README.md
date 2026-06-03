@@ -40,7 +40,11 @@
 
 ## Gambaran Umum
 
-EmoVision AI adalah inti machine learning dari **EmoVision Capstone Project** yang mengusung pendekatan multimodal (Teks & Gambar). Sistem ini mengintegrasikan dua layanan utama: API analisis teks yang memproses curhatan atau jurnal pengguna menggunakan arsitektur Transformer mBERT via Hugging Face Spaces, serta API deteksi ekspresi wajah yang menerima file gambar, mendeteksi dan memotong wajah secara otomatis menggunakan Haar Cascade OpenCV, lalu menjalankan inferensi melalui model TensorFlow (SavedModel) lokal. Kedua subsistem ini menyelaraskan hasil untuk mengembalikan prediksi 7 kelas emosi secara holistik beserta skor kepercayaan dan distribusi probabilitas yang lengkap.
+EmoVision AI adalah inti machine learning dari **EmoVision Capstone Project** yang mengusung pendekatan multimodal (Teks & Gambar). Sistem ini mengintegrasikan dua layanan utama: API analisis teks yang memproses curhatan atau jurnal pengguna menggunakan arsitektur Transformer mBERT via Hugging Face Spaces, serta API deteksi ekspresi wajah yang menerima file gambar, mendeteksi dan memotong wajah secara otomatis menggunakan Haar Cascade OpenCV, lalu menjalankan inferensi melalui model TensorFlow (SavedModel) lokal. Kedua subsistem ini menyelaraskan hasil untuk mengembalikan prediksi 7 kelas emosi secara holistik beserta skor kepercayaan dan distribusi probabilitas yang lengkap. 
+
+Berikut adalah notebook pelatihan:
+* Fitur Citra Wajah : https://colab.research.google.com/drive/15tT35HFvjM50AvvivlrsTUeF48nlEHa4
+* Fitur Jurnaling : https://colab.research.google.com/drive/1tb79cywMfHBS8LNbVt762iU77phACiRM?usp=sharing
 
 ---
 
